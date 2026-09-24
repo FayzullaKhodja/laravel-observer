@@ -5,6 +5,7 @@ namespace Company\Observer;
 use Company\Observer\Buffer\RecordBuffer;
 use Company\Observer\Context\ContextProvider;
 use Company\Observer\Context\RequestIdMiddleware;
+use Company\Observer\Logging\ExceptionExtractor;
 use Company\Observer\Logging\RecordNormalizer;
 use Company\Observer\Security\DataSanitizer;
 use Company\Observer\Transport\HttpTransport;
@@ -36,9 +37,15 @@ class ObserverServiceProvider extends ServiceProvider
             $app->make(DataSanitizer::class),
         ));
 
+        $this->app->singleton(ExceptionExtractor::class, fn () => new ExceptionExtractor(
+            (int) config('observer.max_message_length', 8192),
+            (int) config('observer.max_trace_length', 32768),
+        ));
+
         $this->app->singleton(RecordNormalizer::class, fn ($app) => new RecordNormalizer(
             $app->make(DataSanitizer::class),
             $app->make(ContextProvider::class),
+            $app->make(ExceptionExtractor::class),
             (int) config('observer.max_message_length', 8192),
             (int) config('observer.max_context_bytes', 32768),
         ));

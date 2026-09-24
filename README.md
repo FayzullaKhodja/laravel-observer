@@ -60,6 +60,7 @@ OBSERVER_CONNECT_TIMEOUT_MS=200
 OBSERVER_MAX_BATCH_RECORDS=250
 OBSERVER_MAX_BATCH_BYTES=1500000
 OBSERVER_MAX_MESSAGE_LENGTH=8192
+OBSERVER_MAX_TRACE_LENGTH=32768
 OBSERVER_MAX_CONTEXT_BYTES=32768
 OBSERVER_APP_NAME=
 OBSERVER_LEVEL=debug
@@ -89,6 +90,19 @@ automatically carries the request ID into jobs dispatched during the request.
 While a job runs, records also contain its resolved name and queue under
 `context._job`.
 
+## Exception capture
+
+Exceptions reported through Laravel's normal `report($e)` flow, unhandled
+exceptions, and throwable values passed as `context['exception']` are captured
+without a package-specific API. The observer record includes the exception
+class, message, code, file, line, and an argument-free stack trace. Previous
+exceptions are included up to five levels deep.
+
+Exception messages use `OBSERVER_MAX_MESSAGE_LENGTH`. Stack traces are limited
+by `OBSERVER_MAX_TRACE_LENGTH` (32,768 characters by default) and marked when
+truncated. The extracted throwable is removed from `context`; other exception
+context supplied through Laravel is normalized and redacted as usual.
+
 ## Delivery behavior
 
 Records are normalized, recursively redacted, and held in memory. The package
@@ -103,6 +117,3 @@ client queue. Failed deliveries and non-success responses are dropped without
 affecting application code. Logging during delivery is ignored to prevent
 recursive observer requests. Setting `OBSERVER_ENABLED=false`, or omitting the
 URL or token, makes the handler a no-op.
-
-Exception field extraction is added in Phase 6; until then, throwable context
-is safely normalized inside `context`.

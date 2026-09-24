@@ -30,6 +30,8 @@ return [
 
     'max_message_length' => (int) env('OBSERVER_MAX_MESSAGE_LENGTH', 8192),
 
+    'max_trace_length' => (int) env('OBSERVER_MAX_TRACE_LENGTH', 32768),
+
     'max_context_bytes' => (int) env('OBSERVER_MAX_CONTEXT_BYTES', 32768),
 
     'app_name' => env('OBSERVER_APP_NAME'),

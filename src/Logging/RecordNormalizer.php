@@ -21,6 +21,7 @@ class RecordNormalizer
     public function __construct(
         private readonly DataSanitizer $sanitizer,
         private readonly ContextProvider $contextProvider,
+        private readonly ExceptionExtractor $exceptionExtractor,
         private readonly int $maxMessageLength,
         private readonly int $maxContextBytes,
     ) {
@@ -35,7 +36,20 @@ class RecordNormalizer
     public function normalize(LogRecord $record): array
     {
         $captured = $this->contextProvider->capture();
-        $context = $this->normalizeContext($record, $captured['job']);
+        $context = $record->context;
+        $exception = null;
+
+        if (($context['exception'] ?? null) instanceof Throwable) {
+            try {
+                $exception = $this->exceptionExtractor->extract($context['exception']);
+
+                if ($exception !== null) {
+                    unset($context['exception']);
+                }
+            } catch (Throwable) {
+                $exception = null;
+            }
+        }
 
         return [
             'record_id' => (string) Str::ulid(),
@@ -44,24 +58,22 @@ class RecordNormalizer
                 ->format('Y-m-d\TH:i:s.v\Z'),
             'level' => strtolower($record->level->getName()),
             'message' => $this->truncate($this->validUtf8($record->message), $this->maxMessageLength),
-            'context' => $context,
+            'context' => $this->normalizeContext($context, $record->extra, $captured['job']),
             'request_id' => $captured['request_id'],
             'request' => $captured['request'],
             'user' => $captured['user'],
-            // Phase 6 extracts exception metadata.
-            'exception' => null,
+            'exception' => $exception,
         ];
     }
 
     /**
+     * @param  array<array-key, mixed>  $context
+     * @param  array<array-key, mixed>  $extra
      * @param  array{name: string|null, queue: string|null}|null  $job
      * @return array<array-key, mixed>
      */
-    private function normalizeContext(LogRecord $record, ?array $job): array
+    private function normalizeContext(array $context, array $extra, ?array $job): array
     {
-        $context = $record->context;
-        $extra = $record->extra;
-
         unset($extra['request_id']);
 
         if ($extra !== []) {
