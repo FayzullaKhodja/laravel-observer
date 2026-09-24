@@ -2,6 +2,7 @@
 
 namespace Company\Observer\Logging;
 
+use Company\Observer\Context\ContextProvider;
 use Company\Observer\Security\DataSanitizer;
 use DateTimeZone;
 use Illuminate\Support\Str;
@@ -19,6 +20,7 @@ class RecordNormalizer
 
     public function __construct(
         private readonly DataSanitizer $sanitizer,
+        private readonly ContextProvider $contextProvider,
         private readonly int $maxMessageLength,
         private readonly int $maxContextBytes,
     ) {
@@ -32,7 +34,8 @@ class RecordNormalizer
      */
     public function normalize(LogRecord $record): array
     {
-        $context = $this->normalizeContext($record);
+        $captured = $this->contextProvider->capture();
+        $context = $this->normalizeContext($record, $captured['job']);
 
         return [
             'record_id' => (string) Str::ulid(),
@@ -42,23 +45,31 @@ class RecordNormalizer
             'level' => strtolower($record->level->getName()),
             'message' => $this->truncate($this->validUtf8($record->message), $this->maxMessageLength),
             'context' => $context,
-            // Phase 5 fills request context; Phase 6 extracts exception metadata.
-            'request_id' => null,
-            'request' => null,
-            'user' => null,
+            'request_id' => $captured['request_id'],
+            'request' => $captured['request'],
+            'user' => $captured['user'],
+            // Phase 6 extracts exception metadata.
             'exception' => null,
         ];
     }
 
     /**
+     * @param  array{name: string|null, queue: string|null}|null  $job
      * @return array<array-key, mixed>
      */
-    private function normalizeContext(LogRecord $record): array
+    private function normalizeContext(LogRecord $record, ?array $job): array
     {
         $context = $record->context;
+        $extra = $record->extra;
 
-        if ($record->extra !== []) {
-            $context['_extra'] = $record->extra;
+        unset($extra['request_id']);
+
+        if ($extra !== []) {
+            $context['_extra'] = $extra;
+        }
+
+        if ($job !== null) {
+            $context['_job'] = $job;
         }
 
         try {

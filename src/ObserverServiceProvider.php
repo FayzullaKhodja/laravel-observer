@@ -3,15 +3,22 @@
 namespace Company\Observer;
 
 use Company\Observer\Buffer\RecordBuffer;
+use Company\Observer\Context\ContextProvider;
+use Company\Observer\Context\RequestIdMiddleware;
 use Company\Observer\Logging\RecordNormalizer;
 use Company\Observer\Security\DataSanitizer;
 use Company\Observer\Transport\HttpTransport;
 use Company\Observer\Transport\TransportInterface;
 use Illuminate\Console\Events\CommandFinished;
+use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Contracts\Http\Kernel as HttpKernel;
+use Illuminate\Foundation\Http\Events\RequestHandled;
 use Illuminate\Queue\Events\JobExceptionOccurred;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
+use Illuminate\Queue\Events\JobProcessing;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\ServiceProvider;
 
 class ObserverServiceProvider extends ServiceProvider
@@ -24,8 +31,14 @@ class ObserverServiceProvider extends ServiceProvider
             config('observer.redact_keys', []),
         ));
 
+        $this->app->singleton(ContextProvider::class, fn ($app) => new ContextProvider(
+            $app->make(AuthFactory::class),
+            $app->make(DataSanitizer::class),
+        ));
+
         $this->app->singleton(RecordNormalizer::class, fn ($app) => new RecordNormalizer(
             $app->make(DataSanitizer::class),
+            $app->make(ContextProvider::class),
             (int) config('observer.max_message_length', 8192),
             (int) config('observer.max_context_bytes', 32768),
         ));
@@ -54,17 +67,33 @@ class ObserverServiceProvider extends ServiceProvider
             ], 'observer-config');
         }
 
+        $this->registerRequestIdMiddleware();
+
         if (! config('observer.enabled')) {
+            $this->app->terminating(fn () => $this->clearRequestContext());
+
             return;
         }
 
         $flush = fn () => $this->app->make(RecordBuffer::class)->flush();
+        $events = $this->app->make(Dispatcher::class);
 
         $this->app->terminating($flush);
+        $this->app->terminating(fn () => $this->clearRequestContext());
 
-        foreach ([JobProcessed::class, JobFailed::class, JobExceptionOccurred::class, CommandFinished::class] as $event) {
-            $this->app->make(Dispatcher::class)->listen($event, $flush);
+        $events->listen(JobProcessing::class, function (JobProcessing $event): void {
+            $this->app->make(ContextProvider::class)->setJob($event->job);
+        });
+
+        foreach ([JobProcessed::class, JobFailed::class] as $event) {
+            $events->listen($event, function () use ($flush): void {
+                $flush();
+                $this->app->make(ContextProvider::class)->clearJob();
+            });
         }
+
+        $events->listen(JobExceptionOccurred::class, $flush);
+        $events->listen(CommandFinished::class, $flush);
     }
 
     private function deliveryIsConfigured(): bool
@@ -72,5 +101,37 @@ class ObserverServiceProvider extends ServiceProvider
         return (bool) config('observer.enabled')
             && trim((string) config('observer.url')) !== ''
             && trim((string) config('observer.token')) !== '';
+    }
+
+    private function registerRequestIdMiddleware(): void
+    {
+        if (! config('observer.request_id.middleware', true) || ! $this->app->bound(HttpKernel::class)) {
+            return;
+        }
+
+        $kernel = $this->app->make(HttpKernel::class);
+
+        if (! method_exists($kernel, 'prependMiddleware')) {
+            return;
+        }
+
+        $kernel->prependMiddleware(RequestIdMiddleware::class);
+
+        $this->app->make(Dispatcher::class)->listen(
+            RequestHandled::class,
+            function (RequestHandled $event): void {
+                $requestId = $event->request->attributes->get(RequestIdMiddleware::REQUEST_ATTRIBUTE);
+
+                if (is_string($requestId) && $requestId !== '') {
+                    $event->response->headers->set(RequestIdMiddleware::headerName(), $requestId);
+                }
+            },
+        );
+    }
+
+    private function clearRequestContext(): void
+    {
+        Context::forget('request_id');
+        $this->app->make(ContextProvider::class)->clearRequest();
     }
 }

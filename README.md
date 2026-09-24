@@ -63,6 +63,8 @@ OBSERVER_MAX_MESSAGE_LENGTH=8192
 OBSERVER_MAX_CONTEXT_BYTES=32768
 OBSERVER_APP_NAME=
 OBSERVER_LEVEL=debug
+OBSERVER_REQUEST_ID_MIDDLEWARE=true
+OBSERVER_REQUEST_ID_HEADER=X-Request-ID
 # Optional comma-separated override:
 OBSERVER_REDACT_KEYS=password,password_confirmation,passwd,secret,client_secret,api_key,apikey,access_token,refresh_token,token,authorization,cookie,set-cookie,credit_card,card_number,cvv,cvc
 ```
@@ -70,6 +72,22 @@ OBSERVER_REDACT_KEYS=password,password_confirmation,passwd,secret,client_secret,
 `OBSERVER_APP_NAME` defaults to `APP_NAME`. The optional
 `OBSERVER_REDACT_KEYS` value is a comma-separated list of sensitive key
 fragments.
+
+## Request and job correlation
+
+By default, the package prepends global HTTP middleware that accepts an
+`X-Request-ID` containing 1 to 128 letters, digits, `.`, `_`, `:`, or `-`.
+It generates a ULID when that header is absent or invalid, adds the ID to all
+observer and local Laravel logs, and returns it on the response. Set
+`OBSERVER_REQUEST_ID_MIDDLEWARE=false` to disable this behavior or change the
+header with `OBSERVER_REQUEST_ID_HEADER`.
+
+Observer records include the request method, query-redacted path, route name,
+and only an already-resolved authenticated user ID. Bodies, headers, cookies,
+IP addresses, and user profile fields are not collected. Laravel Context
+automatically carries the request ID into jobs dispatched during the request.
+While a job runs, records also contain its resolved name and queue under
+`context._job`.
 
 ## Delivery behavior
 
@@ -86,6 +104,5 @@ affecting application code. Logging during delivery is ignored to prevent
 recursive observer requests. Setting `OBSERVER_ENABLED=false`, or omitting the
 URL or token, makes the handler a no-op.
 
-Request/user correlation is added in Phase 5. Exception field extraction is
-added in Phase 6; until then, throwable context is safely normalized inside
-`context`.
+Exception field extraction is added in Phase 6; until then, throwable context
+is safely normalized inside `context`.

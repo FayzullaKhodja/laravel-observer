@@ -63,6 +63,28 @@ class DataSanitizer
         return false;
     }
 
+    public function redactPath(string $path): string
+    {
+        $queryPosition = strpos($path, '?');
+
+        if ($queryPosition === false) {
+            return $path;
+        }
+
+        $pairs = explode('&', substr($path, $queryPosition + 1));
+
+        foreach ($pairs as $index => $pair) {
+            [$encodedName] = explode('=', $pair, 2);
+            $name = urldecode($encodedName);
+
+            if ($name !== '' && $this->isSensitive($name)) {
+                $pairs[$index] = $encodedName.'='.self::REDACTED;
+            }
+        }
+
+        return substr($path, 0, $queryPosition + 1).implode('&', $pairs);
+    }
+
     private function normalizeKey(string $key): string
     {
         return str_replace('-', '_', strtolower($key));
