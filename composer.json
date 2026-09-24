@@ -1,0 +1,32 @@
+{
+    "name": "company/laravel-observer",
+    "description": "Forwards standard Laravel log records and exceptions to a central Log Observer server.",
+    "type": "library",
+    "license": "proprietary",
+    "require": {
+        "php": "^8.3",
+        "illuminate/support": "^12.0|^13.0",
+        "illuminate/http": "^12.0|^13.0",
+        "illuminate/log": "^12.0|^13.0",
+        "monolog/monolog": "^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Company\\Observer\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Company\\Observer\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Company\\Observer\\ObserverServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
