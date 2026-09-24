@@ -39,10 +39,15 @@ class RecordBuffer
             $record,
             JSON_INVALID_UTF8_SUBSTITUTE | JSON_PARTIAL_OUTPUT_ON_ERROR,
         );
-        $recordBytes = is_string($encoded) ? strlen($encoded) : max(1, $this->maxBatchBytes);
+        $maxBatchBytes = max(1, $this->maxBatchBytes);
+        $recordBytes = is_string($encoded) ? strlen($encoded) : $maxBatchBytes;
+
+        if ($recordBytes > $maxBatchBytes) {
+            return;
+        }
 
         if (count($this->records) >= max(1, $this->maxBatchRecords)
-            || ($this->records !== [] && $this->recordsBytes + $recordBytes > max(1, $this->maxBatchBytes))) {
+            || ($this->records !== [] && $this->recordsBytes + $recordBytes > $maxBatchBytes)) {
             $this->flush();
         }
 

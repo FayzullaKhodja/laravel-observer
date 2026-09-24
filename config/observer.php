@@ -25,7 +25,8 @@ return [
 
     'max_batch_records' => (int) env('OBSERVER_MAX_BATCH_RECORDS', 250),
 
-    // Kept below the Log Server's default 2 MB request limit for envelope overhead.
+    // Kept below the server limit for envelope overhead. A record larger than
+    // max(1, this value) is dropped silently before buffering.
     'max_batch_bytes' => (int) env('OBSERVER_MAX_BATCH_BYTES', 1500000),
 
     'max_message_length' => (int) env('OBSERVER_MAX_MESSAGE_LENGTH', 8192),

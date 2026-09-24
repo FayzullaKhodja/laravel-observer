@@ -9,8 +9,22 @@ batches.
 
 Add the package repository and require the package:
 
+```json
+{
+  "repositories": [
+    {
+      "type": "path",
+      "url": "../log-observer/packages/laravel-observer",
+      "options": {
+        "symlink": true
+      }
+    }
+  ]
+}
+```
+
 ```bash
-composer require company/laravel-observer
+composer require company/laravel-observer:@dev
 php artisan vendor:publish --tag=observer-config
 ```
 
@@ -103,14 +117,16 @@ by `OBSERVER_MAX_TRACE_LENGTH` (32,768 characters by default) and marked when
 truncated. The extracted throwable is removed from `context`; other exception
 context supplied through Laravel is normalized and redacted as usual.
 
-## Delivery behavior
+## Limits and delivery behavior
 
 Records are normalized, recursively redacted, and held in memory. The package
 sends one batch when the application terminates or a queue job/console command
 finishes. When `OBSERVER_MAX_BATCH_RECORDS` or `OBSERVER_MAX_BATCH_BYTES` is
 reached, it sends that full batch early and continues with a fresh buffer so
-long workers stay bounded. The byte limit leaves room under the server's
-default 2 MB request limit for the envelope.
+long workers stay bounded. A single record whose JSON-encoded size exceeds
+`max(1, OBSERVER_MAX_BATCH_BYTES)` is dropped before buffering and is never
+sent. The drop is silent to avoid recursive Laravel logging. The byte limit
+leaves room under the server's default 2 MB request limit for the envelope.
 
 Delivery uses short connect/request timeouts, no retries, and no persistent
 client queue. Failed deliveries and non-success responses are dropped without
