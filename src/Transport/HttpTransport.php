@@ -23,8 +23,10 @@ class HttpTransport implements TransportInterface
         try {
             Http::withToken($this->token)
                 ->acceptJson()
-                ->timeout(max(1, $this->timeoutMs) / 1000)
-                ->connectTimeout(max(1, $this->connectTimeoutMs) / 1000)
+                ->withOptions([
+                    'timeout' => max(1, $this->timeoutMs) / 1000,
+                    'connect_timeout' => max(1, $this->connectTimeoutMs) / 1000,
+                ])
                 ->post(rtrim($this->url, '/').'/api/v1/ingest', $batch);
         } catch (Throwable) {
             // V1 deliberately drops failed deliveries. There is no client retry queue.

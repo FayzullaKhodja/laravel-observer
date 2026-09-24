@@ -58,7 +58,12 @@ class RecordNormalizer
                 ->format('Y-m-d\TH:i:s.v\Z'),
             'level' => strtolower($record->level->getName()),
             'message' => $this->truncate($this->validUtf8($record->message), $this->maxMessageLength),
-            'context' => $this->normalizeContext($context, $record->extra, $captured['job']),
+            'context' => $this->normalizeContext(
+                $context,
+                $record->extra,
+                $captured['request_id'],
+                $captured['job'],
+            ),
             'request_id' => $captured['request_id'],
             'request' => $captured['request'],
             'user' => $captured['user'],
@@ -72,9 +77,21 @@ class RecordNormalizer
      * @param  array{name: string|null, queue: string|null}|null  $job
      * @return array<array-key, mixed>
      */
-    private function normalizeContext(array $context, array $extra, ?array $job): array
-    {
-        unset($extra['request_id']);
+    private function normalizeContext(
+        array $context,
+        array $extra,
+        ?string $requestId,
+        ?array $job,
+    ): array {
+        if ($requestId !== null) {
+            if (($context['request_id'] ?? null) === $requestId) {
+                unset($context['request_id']);
+            }
+
+            if (($extra['request_id'] ?? null) === $requestId) {
+                unset($extra['request_id']);
+            }
+        }
 
         if ($extra !== []) {
             $context['_extra'] = $extra;

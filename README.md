@@ -3,7 +3,7 @@
 Laravel client package for the Log Observer server. Applications keep using
 `Log::info()`, `Log::error()`, `report($e)`; this package adds a Monolog
 handler that buffers records in memory and ships them to the Log Server in
-batches. The package supports Laravel 12 and 13.
+batches. The package supports Laravel 10 through 13 and PHP 8.1 or newer.
 
 ## Install
 
@@ -99,10 +99,12 @@ header with `OBSERVER_REQUEST_ID_HEADER`.
 
 Observer records include the request method, query-redacted path, route name,
 and only an already-resolved authenticated user ID. Bodies, headers, cookies,
-IP addresses, and user profile fields are not collected. Laravel Context
-automatically carries the request ID into jobs dispatched during the request.
-While a job runs, records also contain its resolved name and queue under
-`context._job`.
+IP addresses, and user profile fields are not collected. On Laravel 11 and
+newer, Laravel Context automatically carries the request ID into jobs
+dispatched during the request. Laravel 10 has no Context dehydration,
+so request IDs are not propagated into queued jobs automatically. Request and
+local-log correlation still work on Laravel 10, and records produced while any
+job runs still contain its resolved name and queue under `context._job`.
 
 ## Exception capture
 

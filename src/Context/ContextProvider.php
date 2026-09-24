@@ -6,7 +6,6 @@ use Company\Observer\Security\DataSanitizer;
 use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Contracts\Queue\Job;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Context;
 use Throwable;
 
 class ContextProvider
@@ -19,6 +18,7 @@ class ContextProvider
     public function __construct(
         private readonly AuthFactory $auth,
         private readonly DataSanitizer $sanitizer,
+        private readonly RequestIdStore $requestIds,
     ) {}
 
     public function setRequest(Request $request): void
@@ -77,7 +77,7 @@ class ContextProvider
 
     private function requestId(): ?string
     {
-        $requestId = Context::get('request_id');
+        $requestId = $this->requestIds->get();
 
         if (! is_string($requestId) || $requestId === '') {
             return null;

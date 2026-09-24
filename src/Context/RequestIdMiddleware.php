@@ -4,7 +4,6 @@ namespace Company\Observer\Context;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -12,12 +11,15 @@ class RequestIdMiddleware
 {
     public const REQUEST_ATTRIBUTE = '_observer_request_id';
 
-    public function __construct(private readonly ContextProvider $context) {}
+    public function __construct(
+        private readonly ContextProvider $context,
+        private readonly RequestIdStore $requestIds,
+    ) {}
 
     public function handle(Request $request, Closure $next): Response
     {
         if (! config('observer.request_id.middleware', true)) {
-            Context::forget('request_id');
+            $this->requestIds->forget();
             $this->context->clearRequest();
 
             return $next($request);
@@ -28,7 +30,7 @@ class RequestIdMiddleware
             ? $request->headers->get($header)
             : (string) Str::ulid();
 
-        Context::add('request_id', $requestId);
+        $this->requestIds->set($requestId);
         $request->attributes->set(self::REQUEST_ATTRIBUTE, $requestId);
         $this->context->setRequest($request);
 

@@ -4,7 +4,10 @@ namespace Company\Observer;
 
 use Company\Observer\Buffer\RecordBuffer;
 use Company\Observer\Context\ContextProvider;
+use Company\Observer\Context\LaravelContextRequestIdStore;
 use Company\Observer\Context\RequestIdMiddleware;
+use Company\Observer\Context\RequestIdStore;
+use Company\Observer\Context\SharedLogRequestIdStore;
 use Company\Observer\Logging\ExceptionExtractor;
 use Company\Observer\Logging\RecordNormalizer;
 use Company\Observer\Security\DataSanitizer;
@@ -15,6 +18,7 @@ use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Http\Events\RequestHandled;
+use Illuminate\Log\Context\Repository;
 use Illuminate\Queue\Events\JobExceptionOccurred;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
@@ -32,9 +36,20 @@ class ObserverServiceProvider extends ServiceProvider
             config('observer.redact_keys', []),
         ));
 
+        $this->app->singleton(RequestIdStore::class, function ($app): RequestIdStore {
+            if (class_exists(Repository::class)
+                && class_exists(Context::class)
+                && $app->bound(Repository::class)) {
+                return new LaravelContextRequestIdStore;
+            }
+
+            return new SharedLogRequestIdStore;
+        });
+
         $this->app->singleton(ContextProvider::class, fn ($app) => new ContextProvider(
             $app->make(AuthFactory::class),
             $app->make(DataSanitizer::class),
+            $app->make(RequestIdStore::class),
         ));
 
         $this->app->singleton(ExceptionExtractor::class, fn () => new ExceptionExtractor(
@@ -138,7 +153,7 @@ class ObserverServiceProvider extends ServiceProvider
 
     private function clearRequestContext(): void
     {
-        Context::forget('request_id');
+        $this->app->make(RequestIdStore::class)->forget();
         $this->app->make(ContextProvider::class)->clearRequest();
     }
 }
