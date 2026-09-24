@@ -3,7 +3,7 @@
 Laravel client package for the Log Observer server. Applications keep using
 `Log::info()`, `Log::error()`, `report($e)`; this package adds a Monolog
 handler that buffers records in memory and ships them to the Log Server in
-batches.
+batches. The package supports Laravel 12 and 13.
 
 ## Install
 
