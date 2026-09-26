@@ -7,25 +7,15 @@ batches. The package supports Laravel 10 through 13 and PHP 8.1 or newer.
 
 ## Install
 
-The package is published to the public repository
-[`FayzullaKhodja/laravel-observer`](https://github.com/FayzullaKhodja/laravel-observer).
-Add it as a VCS repository and require a tagged version:
-
-```json
-{
-  "repositories": [
-    { "type": "vcs", "url": "https://github.com/FayzullaKhodja/laravel-observer.git" }
-  ]
-}
-```
+The package is available on
+[Packagist](https://packagist.org/packages/khodja/laravel-observer):
 
 ```bash
 composer require khodja/laravel-observer:^1.0
 php artisan vendor:publish --tag=observer-config
 ```
 
-No GitHub credentials are required. On machines that install many packages
-from GitHub, a `github-oauth` token only raises the anonymous API rate limit.
+Source: [`FayzullaKhodja/laravel-observer`](https://github.com/FayzullaKhodja/laravel-observer).
 
 For local development against a checkout of the monorepo, use a path
 repository (`"type": "path"`, `"url": "../log-observer/packages/laravel-observer"`)
