@@ -7,14 +7,14 @@ batches. The package supports Laravel 10 through 13 and PHP 8.1 or newer.
 
 ## Install
 
-The package is published to the private repository
-`FayzullaKhodja/laravel-observer`. Add it as a VCS repository and require a
-tagged version:
+The package is published to the public repository
+[`FayzullaKhodja/laravel-observer`](https://github.com/FayzullaKhodja/laravel-observer).
+Add it as a VCS repository and require a tagged version:
 
 ```json
 {
   "repositories": [
-    { "type": "vcs", "url": "git@github.com:FayzullaKhodja/laravel-observer.git" }
+    { "type": "vcs", "url": "https://github.com/FayzullaKhodja/laravel-observer.git" }
   ]
 }
 ```
@@ -24,9 +24,8 @@ composer require khodja/laravel-observer:^1.0
 php artisan vendor:publish --tag=observer-config
 ```
 
-Composer needs read access to the repository: an SSH key on your GitHub
-account, `composer config --global github-oauth.github.com <token>`, or a
-read-only deploy key on servers.
+No GitHub credentials are required. On machines that install many packages
+from GitHub, a `github-oauth` token only raises the anonymous API rate limit.
 
 For local development against a checkout of the monorepo, use a path
 repository (`"type": "path"`, `"url": "../log-observer/packages/laravel-observer"`)
@@ -139,3 +138,7 @@ client queue. Failed deliveries and non-success responses are dropped without
 affecting application code. Logging during delivery is ignored to prevent
 recursive observer requests. Setting `OBSERVER_ENABLED=false`, or omitting the
 URL or token, makes the handler a no-op.
+
+## License
+
+MIT. See [`LICENSE`](LICENSE).
