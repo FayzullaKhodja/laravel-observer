@@ -1,5 +1,5 @@
 {
-    "name": "company/laravel-observer",
+    "name": "khodja/laravel-observer",
     "description": "Forwards standard Laravel log records and exceptions to a central Log Observer server.",
     "type": "library",
     "license": "proprietary",

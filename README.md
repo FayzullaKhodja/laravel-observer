@@ -1,4 +1,4 @@
-# company/laravel-observer
+# khodja/laravel-observer
 
 Laravel client package for the Log Observer server. Applications keep using
 `Log::info()`, `Log::error()`, `report($e)`; this package adds a Monolog
@@ -7,26 +7,30 @@ batches. The package supports Laravel 10 through 13 and PHP 8.1 or newer.
 
 ## Install
 
-Add the package repository and require the package:
+The package is published to the private repository
+`FayzullaKhodja/laravel-observer`. Add it as a VCS repository and require a
+tagged version:
 
 ```json
 {
   "repositories": [
-    {
-      "type": "path",
-      "url": "../log-observer/packages/laravel-observer",
-      "options": {
-        "symlink": true
-      }
-    }
+    { "type": "vcs", "url": "git@github.com:FayzullaKhodja/laravel-observer.git" }
   ]
 }
 ```
 
 ```bash
-composer require company/laravel-observer:@dev
+composer require khodja/laravel-observer:^1.0
 php artisan vendor:publish --tag=observer-config
 ```
+
+Composer needs read access to the repository: an SSH key on your GitHub
+account, `composer config --global github-oauth.github.com <token>`, or a
+read-only deploy key on servers.
+
+For local development against a checkout of the monorepo, use a path
+repository (`"type": "path"`, `"url": "../log-observer/packages/laravel-observer"`)
+and `composer require khodja/laravel-observer:@dev` instead.
 
 Package discovery registers `ObserverServiceProvider` automatically.
 
