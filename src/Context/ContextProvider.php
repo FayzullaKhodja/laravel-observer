@@ -1,11 +1,11 @@
 <?php
 
-namespace Company\Observer\Context;
+namespace Khodja\LaravelObserver\Context;
 
-use Company\Observer\Security\DataSanitizer;
 use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Contracts\Queue\Job;
 use Illuminate\Http\Request;
+use Khodja\LaravelObserver\Security\DataSanitizer;
 use Throwable;
 
 class ContextProvider

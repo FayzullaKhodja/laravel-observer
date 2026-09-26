@@ -1,6 +1,6 @@
 <?php
 
-namespace Company\Observer\Transport;
+namespace Khodja\LaravelObserver\Transport;
 
 interface TransportInterface
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Company\Observer\Context;
+namespace Khodja\LaravelObserver\Context;
 
 use Illuminate\Support\Facades\Context;
 

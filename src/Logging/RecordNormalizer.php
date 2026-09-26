@@ -1,11 +1,11 @@
 <?php
 
-namespace Company\Observer\Logging;
+namespace Khodja\LaravelObserver\Logging;
 
-use Company\Observer\Context\ContextProvider;
-use Company\Observer\Security\DataSanitizer;
 use DateTimeZone;
 use Illuminate\Support\Str;
+use Khodja\LaravelObserver\Context\ContextProvider;
+use Khodja\LaravelObserver\Security\DataSanitizer;
 use Monolog\Formatter\NormalizerFormatter;
 use Monolog\LogRecord;
 use Throwable;

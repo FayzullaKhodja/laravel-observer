@@ -1,8 +1,8 @@
 <?php
 
-namespace Company\Observer\Logging;
+namespace Khodja\LaravelObserver\Logging;
 
-use Company\Observer\Buffer\RecordBuffer;
+use Khodja\LaravelObserver\Buffer\RecordBuffer;
 use Monolog\Handler\AbstractHandler;
 use Monolog\Level;
 use Monolog\LogRecord;

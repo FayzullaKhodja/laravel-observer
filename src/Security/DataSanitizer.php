@@ -1,6 +1,6 @@
 <?php
 
-namespace Company\Observer\Security;
+namespace Khodja\LaravelObserver\Security;
 
 /**
  * Recursively redacts values whose keys contain sensitive fragments.

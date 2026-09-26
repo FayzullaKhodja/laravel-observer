@@ -1,18 +1,7 @@
 <?php
 
-namespace Company\Observer;
+namespace Khodja\LaravelObserver;
 
-use Company\Observer\Buffer\RecordBuffer;
-use Company\Observer\Context\ContextProvider;
-use Company\Observer\Context\LaravelContextRequestIdStore;
-use Company\Observer\Context\RequestIdMiddleware;
-use Company\Observer\Context\RequestIdStore;
-use Company\Observer\Context\SharedLogRequestIdStore;
-use Company\Observer\Logging\ExceptionExtractor;
-use Company\Observer\Logging\RecordNormalizer;
-use Company\Observer\Security\DataSanitizer;
-use Company\Observer\Transport\HttpTransport;
-use Company\Observer\Transport\TransportInterface;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -25,6 +14,17 @@ use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\ServiceProvider;
+use Khodja\LaravelObserver\Buffer\RecordBuffer;
+use Khodja\LaravelObserver\Context\ContextProvider;
+use Khodja\LaravelObserver\Context\LaravelContextRequestIdStore;
+use Khodja\LaravelObserver\Context\RequestIdMiddleware;
+use Khodja\LaravelObserver\Context\RequestIdStore;
+use Khodja\LaravelObserver\Context\SharedLogRequestIdStore;
+use Khodja\LaravelObserver\Logging\ExceptionExtractor;
+use Khodja\LaravelObserver\Logging\RecordNormalizer;
+use Khodja\LaravelObserver\Security\DataSanitizer;
+use Khodja\LaravelObserver\Transport\HttpTransport;
+use Khodja\LaravelObserver\Transport\TransportInterface;
 
 class ObserverServiceProvider extends ServiceProvider
 {

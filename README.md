@@ -40,7 +40,7 @@ Add an `observer` channel to `config/logging.php`, then keep it next to a
 local channel in the normal Laravel stack:
 
 ```php
-use Company\Observer\Logging\ObserverHandler;
+use Khodja\LaravelObserver\Logging\ObserverHandler;
 
 'channels' => [
     'stack' => [

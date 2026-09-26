@@ -1,6 +1,6 @@
 <?php
 
-namespace Company\Observer\Logging;
+namespace Khodja\LaravelObserver\Logging;
 
 use Throwable;
 

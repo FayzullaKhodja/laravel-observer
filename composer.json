@@ -12,18 +12,18 @@
     },
     "autoload": {
         "psr-4": {
-            "Company\\Observer\\": "src/"
+            "Khodja\\LaravelObserver\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Company\\Observer\\Tests\\": "tests/"
+            "Khodja\\LaravelObserver\\Tests\\": "tests/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Company\\Observer\\ObserverServiceProvider"
+                "Khodja\\LaravelObserver\\ObserverServiceProvider"
             ]
         }
     },

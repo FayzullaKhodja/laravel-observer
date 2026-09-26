@@ -1,12 +1,12 @@
 <?php
 
-namespace Company\Observer\Buffer;
+namespace Khodja\LaravelObserver\Buffer;
 
-use Company\Observer\Transport\TransportInterface;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Str;
+use Khodja\LaravelObserver\Transport\TransportInterface;
 use Throwable;
 
 class RecordBuffer
